@@ -4,4 +4,3 @@ node_modules/
 .eslintcache
 .idea
 DS_Store
-.dist
