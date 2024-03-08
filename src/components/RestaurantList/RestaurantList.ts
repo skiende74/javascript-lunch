@@ -1,8 +1,9 @@
 import RestaurantDBService from '@/domains/services/RestaurantDBService';
 import BaseComponent from '../BaseComponent';
-import RestaurantItem from '../RestaurantItem/RestaurantItem';
+import RestaurantItem from './RestaurantItem/RestaurantItem';
 import { IRestaurant } from '@/types/Restaurant';
 
+import './RestaurantList.css';
 class RestaurantList extends BaseComponent {
   #restaurantList;
   #restaurantDBService: RestaurantDBService;
@@ -14,7 +15,6 @@ class RestaurantList extends BaseComponent {
   }
 
   render() {
-    //처음 렌더링 될 떄 localStorage에서 데이터 가져오기
     const restaurantList = this.#makeRestaurantList(this.#restaurantList);
     this.append(restaurantList);
   }

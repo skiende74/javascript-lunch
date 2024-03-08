@@ -1,4 +1,4 @@
-import BaseComponent from '../BaseComponent';
+import BaseComponent from '../../BaseComponent';
 import koreanIcon from '@/assets/category-korean.png';
 import asianIcon from '@/assets/category-asian.png';
 import japaneseIcon from '@/assets/category-japanese.png';
@@ -7,6 +7,7 @@ import westernIcon from '@/assets/category-western.png';
 import etcIcon from '@/assets/category-etc.png';
 import { Category, IRestaurant } from '@/types/Restaurant';
 
+import './RestaurantItem.css';
 export const Icons: { [key: Category]: string } = {
   한식: koreanIcon,
   아시안: asianIcon,
@@ -39,7 +40,7 @@ class RestaurantItem extends BaseComponent {
     <h3 class="restaurant__name text-subtitle">${this.#name}</h3>
     <span class="restaurant__distance text-body">캠퍼스부터 ${this.#distance}분 내</span>
     <p class="restaurant__description text-body">
-    ${this.#description}
+    ${this.#description ?? ''}
     </p>
     </div>
     </li>`;
