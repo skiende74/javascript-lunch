@@ -1,17 +1,25 @@
 import BaseComponent from '@/components/BaseComponent';
 
 import './SelectBox.css';
+
+interface Options<T> {
+  values: T[];
+  texts: string[];
+}
+
 class SelectBox<T extends string> extends HTMLSelectElement {
-  #optionValues: T[];
+  #options: Options<T>;
   #name;
 
-  constructor(optionValues: T[], name: string) {
+  constructor(options: Options<T>, name: string) {
     super();
-    this.#optionValues = optionValues;
+    this.#options = options;
+
     this.#name = name;
     this.render();
   }
 
+  // TODO: 추후 id와 name을 다르게 사용할 수 있게 열어 주는 게 좋음.
   render() {
     this.className = 'restaurant-filter';
     this.name = this.#name;
@@ -19,16 +27,11 @@ class SelectBox<T extends string> extends HTMLSelectElement {
     this.#makeOptionTags();
   }
 
-  //TODO: 메인의 필터링과 새로운 음식점 추가 모달에서 class 다름 => 고치기
-  //TODO: 메인의 필터링과 새로운 음식점 추가 모달에서 아이디가 다름 => 고치기
-
   #makeOptionTags() {
-    this.#optionValues.forEach((option) => {
-      const optionTag = new Option();
-      optionTag.value = option; //5
-      optionTag.textContent = option; //5분 내
+    for (let i = 0; i < this.#options.values.length; i++) {
+      const optionTag = new Option(this.#options.texts[i], this.#options.values[i]);
       this.add(optionTag);
-    });
+    }
   }
 }
 

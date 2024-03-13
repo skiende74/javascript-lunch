@@ -6,6 +6,7 @@ import { Category, CategoryOrAll, SortCriteria } from '@/types/Restaurant';
 import RestaurantList from '../RestaurantList/RestaurantList';
 
 import './FilterContainer.css';
+import MainApp from '../MainApp';
 class FilterContainer extends BaseComponent {
   #selectCategoryBox: SelectBox<CategoryOrAll>;
   #selectSortBox: SelectBox<SortCriteria>;
@@ -13,8 +14,14 @@ class FilterContainer extends BaseComponent {
 
   constructor() {
     super();
-    this.#selectCategoryBox = new SelectBox<CategoryOrAll>(CATEGORIES_WITH_ALL_KEYS, 'category');
-    this.#selectSortBox = new SelectBox<SortCriteria>(SORT_CRITERION_KEYS, 'sorting');
+    this.#selectCategoryBox = new SelectBox<CategoryOrAll>(
+      { values: CATEGORIES_WITH_ALL_KEYS, texts: CATEGORIES_WITH_ALL_KEYS },
+      'category',
+    );
+    this.#selectSortBox = new SelectBox<SortCriteria>(
+      { values: SORT_CRITERION_KEYS, texts: SORT_CRITERION_KEYS },
+      'sorting',
+    );
     this.#restaurantList = document.querySelector('.restaurant-list')!;
   }
 
@@ -27,20 +34,9 @@ class FilterContainer extends BaseComponent {
     return { category: this.#selectCategoryBox.value, sortCriteria: this.#selectSortBox.value };
   }
 
-  repaint() {
-    const restaurantDBService = new RestaurantDBService();
-
-    const newRestaurantList = restaurantDBService.getFromRestaurantList(
-      this.#selectCategoryBox.value as Category,
-      this.#selectSortBox.value as SortCriteria,
-    );
-
-    this.#restaurantList.paint(newRestaurantList);
-  }
-
   setEvent() {
     this.addEventListener('change', () => {
-      this.repaint();
+      (this.parentElement as MainApp).paint();
     });
   }
 }
