@@ -23,7 +23,7 @@ class RestaurantDBService {
     this.#restaurantCollection = new RestaurantCollection(existingRestaurants);
   }
 
-  get() {
+  get(): IRestaurant[] {
     return JSON.parse(localStorage.getItem(this.#RESTAURANTS_DB_KEY) ?? '[]');
   }
 
@@ -37,6 +37,14 @@ class RestaurantDBService {
     localStorage.setItem(
       this.#RESTAURANTS_DB_KEY,
       JSON.stringify(this.#restaurantCollection.get()),
+    );
+  }
+
+  remove(restaurant: IRestaurant) {
+    this.update();
+    localStorage.setItem(
+      this.#RESTAURANTS_DB_KEY,
+      JSON.stringify(this.#restaurantCollection.remove(restaurant)),
     );
   }
 }

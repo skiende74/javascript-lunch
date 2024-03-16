@@ -55,5 +55,9 @@ body {
 }
 
 .hidden {
-  visibility: hidden;
+  display: none;
+}
+
+.clickable {
+  cursor: pointer;
 }

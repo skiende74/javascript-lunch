@@ -1,25 +1,32 @@
-import BaseComponent from '@/components/BaseComponent';
-
 import './SelectBox.css';
 
-interface Options<T> {
-  values: T[];
-  texts: string[];
-}
-
 class SelectBox<T extends string> extends HTMLSelectElement {
-  #options: Options<T>;
-  #name;
+  values: T[] = [];
+  #texts: string[] = [];
+  #name = '';
 
-  constructor(options: Options<T>, name: string) {
+  constructor(values: T[] = [], texts: string[] = [], name: string = '') {
     super();
-    this.#options = options;
-
+    this.values = values;
+    this.#texts = texts;
     this.#name = name;
     this.render();
   }
 
-  // TODO: 추후 id와 name을 다르게 사용할 수 있게 열어 주는 게 좋음.
+  set(values: T[], texts: string[], name: string) {
+    this.values = values;
+    this.#texts = texts;
+    this.#name = name;
+    this.render();
+  }
+
+  get() {
+    return {
+      values: this.values,
+      texts: this.#texts,
+      names: this.#name,
+    };
+  }
   render() {
     this.className = 'restaurant-filter';
     this.name = this.#name;
@@ -28,8 +35,8 @@ class SelectBox<T extends string> extends HTMLSelectElement {
   }
 
   #makeOptionTags() {
-    for (let i = 0; i < this.#options.values.length; i++) {
-      const optionTag = new Option(this.#options.texts[i], this.#options.values[i]);
+    for (let i = 0; i < this.values.length; i++) {
+      const optionTag = new Option(this.#texts[i], this.values[i]);
       this.add(optionTag);
     }
   }
