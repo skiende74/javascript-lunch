@@ -4,6 +4,8 @@ import { IRestaurant } from '@/types/Restaurant';
 
 import './RestaurantList.css';
 import FavoriteIcon from '../Basic/FavoriteIcon';
+import RestaurantCollection from '@/domains/entities/RestaurantCollection';
+import Restaurant from '@/domains/entities/Restaurant';
 
 class RestaurantList extends HTMLUListElement {
   #restaurants: IRestaurant[];
@@ -15,9 +17,17 @@ class RestaurantList extends HTMLUListElement {
 
     this.addEventListener('click', (event) => {
       if (event.target instanceof FavoriteIcon) {
-        const restaurants = this.get();
-        new RestaurantDBService().set(restaurants);
-        this.paint(restaurants);
+        const restaurants = new RestaurantDBService().get();
+        const changed = (
+          (event.target as FavoriteIcon).parentElement?.parentElement as RestaurantItem
+        ).get();
+        const changedRestaurant = new Restaurant(changed);
+
+        const newRestaurants: IRestaurant[] = restaurants.map((restaurant) =>
+          new Restaurant(changed).isEqual(restaurant) ? changed : restaurant,
+        );
+        new RestaurantDBService().set(newRestaurants);
+        this.paint(newRestaurants);
       }
     });
   }
