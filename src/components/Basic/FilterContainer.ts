@@ -1,16 +1,13 @@
 import { CATEGORIES_WITH_ALL_KEYS, SORT_CRITERION_KEYS } from '@/constants/Condition';
-import { Category, CategoryOrAll, SortCriteria } from '@/types/Restaurant';
-import BaseComponent from '../BaseComponent';
+import { Category, CategoryOrAll, CategoryOrPlaceholder, SortCriteria } from '@/types/Restaurant';
 
 import AllRestaurantApp from '../AllRestaurantApp';
 import SelectBox from './SelectBox';
-import RestaurantList from '../RestaurantList/RestaurantList';
 
 import './FilterContainer.css';
-class FilterContainer extends BaseComponent {
+class FilterContainer extends HTMLDivElement {
   #selectCategoryBox: SelectBox<CategoryOrAll>;
   #selectSortBox: SelectBox<SortCriteria>;
-  #restaurantList: RestaurantList;
 
   constructor() {
     super();
@@ -26,7 +23,7 @@ class FilterContainer extends BaseComponent {
       'sorting',
     );
 
-    this.#restaurantList = document.querySelector('.restaurant-list')!;
+    this.render();
   }
 
   render() {
@@ -35,16 +32,19 @@ class FilterContainer extends BaseComponent {
   }
 
   get() {
-    return { category: this.#selectCategoryBox.value, sortCriteria: this.#selectSortBox.value };
+    return {
+      category: this.#selectCategoryBox.get(),
+      sortCriteria: this.#selectSortBox.get(),
+    };
   }
 
   setEvent() {
     this.addEventListener('change', () => {
-      (this.parentElement as AllRestaurantApp).paint();
+      (this.parentElement as AllRestaurantApp).render();
     });
   }
 }
 
-customElements.define('filter-container', FilterContainer);
+customElements.define('filter-container', FilterContainer, { extends: 'div' });
 
 export default FilterContainer;

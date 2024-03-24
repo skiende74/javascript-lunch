@@ -1,12 +1,10 @@
 import '@/css/index.css';
 import RestaurantList from './RestaurantList/RestaurantList';
-import { Category, SortCriteria } from '@/types/Restaurant';
+import { Category, CategoryOrAll, SortCriteria } from '@/types/Restaurant';
 import FilterContainer from './Basic/FilterContainer';
-import NewRestaurantModal from './NewRestaurantModal/NewRestaurantModal';
 import RestaurantDBService from '@/domains/services/RestaurantDBService';
 import restaurantListMock from '@/mock/restaurantList.mock';
-import FavoriteIcon from './Basic/FavoriteIcon';
-import RestaurantItem from './RestaurantList/RestaurantItem';
+import { dom } from '@/util/dom';
 
 class AllRestaurantApp extends HTMLDivElement {
   #filterContainer: FilterContainer;
@@ -17,42 +15,42 @@ class AllRestaurantApp extends HTMLDivElement {
 
   constructor() {
     super();
-    this.classList.add('all-restaurant-app');
+    this.classList.add('restaurant-app');
     this.innerHTML = `
-    <filter-container class="restaurant-filter-container"></filter-container>
+    <div is="filter-container" class="restaurant-filter-container"></div>
     <ul is="restaurant-list" class="restaurant-list-container restaurant-list"></ul>
     `;
 
-    this.#filterContainer = this.querySelector('.restaurant-filter-container')!;
-    this.#restaurantList = this.querySelector('.restaurant-list')!;
+    this.#filterContainer = dom.getElement<FilterContainer>(this, '.restaurant-filter-container');
+    this.#filterContainer.addEventListener('change', this.#onChangeFilterContainer.bind(this));
+    this.#restaurantList = dom.getElement<RestaurantList>(this, '.restaurant-list');
 
     this.#restaurantDBService = new RestaurantDBService();
-    this.paint();
+    this.render();
   }
-  connectedCallback() {
-    this.paint();
-  }
-  paint() {
+
+  render() {
     this.#restaurantList.paint(this.#getNewRestaurantList());
   }
 
   #getNewRestaurantList() {
-    const { category, sortCriteria } = this.#filterContainer.get();
-
-    let newRestaurantList = this.#getDB(category as Category, sortCriteria as SortCriteria);
-    if (!newRestaurantList) {
+    if (this.#restaurantDBService.isEmpty()) {
       this.#setMock();
-      newRestaurantList = this.#getDB(category as Category, sortCriteria as SortCriteria);
     }
-    return newRestaurantList;
+    const { category, sortCriteria } = this.#filterContainer.get();
+    return this.#getDB(category, sortCriteria);
   }
 
   #setMock() {
     this.#restaurantDBService.set(restaurantListMock);
   }
 
-  #getDB(category: Category, sortCriteria: SortCriteria) {
-    return this.#restaurantDBService.getFromRestaurantList(category, sortCriteria);
+  #getDB(category: CategoryOrAll, sortCriteria: SortCriteria) {
+    return this.#restaurantDBService.getAfterFiltering(category, sortCriteria);
+  }
+
+  #onChangeFilterContainer(event: Event) {
+    this.render();
   }
 }
 

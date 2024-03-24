@@ -21,14 +21,11 @@ class SelectBox<T extends string> extends HTMLSelectElement {
   }
 
   get() {
-    return {
-      values: this.values,
-      texts: this.#texts,
-      names: this.#name,
-    };
+    return this.values[this.selectedIndex];
   }
+
   render() {
-    this.className = 'restaurant-filter';
+    this.classList.add('restaurant-filter');
     this.name = this.#name;
     this.id = `${this.#name}-filter`;
     this.#makeOptionTags();

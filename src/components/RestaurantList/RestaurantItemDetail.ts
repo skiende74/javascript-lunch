@@ -1,13 +1,14 @@
 import { Category, DistanceNumeric, IRestaurant } from '@/types/Restaurant';
 
 import style from './RestaurantItemDetail.module.css';
-import RestaurantCategoryIcon from '../Basic/RestaurantCategoryIcon';
+import RestaurantCategoryIcon from './RestaurantCategoryIcon';
 import FavoriteIcon from '../Basic/FavoriteIcon';
 import MainApp from '../MainApp';
 import RestaurantDBService from '@/domains/services/RestaurantDBService';
-import Restaurant from '@/domains/entities/Restaurant';
 import BasicButton from '../Basic/BasicButton';
 import BasicModal from '../Basic/BasicModal';
+import { dom } from '@/util/dom';
+import RestaurantCollection from '@/domains/entities/RestaurantCollection';
 
 class RestaurantItemDetail extends HTMLLIElement {
   #category: Category = '기타';
@@ -17,15 +18,12 @@ class RestaurantItemDetail extends HTMLLIElement {
   #link?: string;
   #isFavorite: boolean = false;
 
-  constructor(props?: IRestaurant) {
+  constructor(props: IRestaurant) {
     super();
 
-    this.template();
-    if (props) {
-      this.setState(props);
-    } else {
-      this.paint();
-    }
+    this.#template();
+    if (props !== undefined) this.setState(props);
+    this.#render();
   }
 
   setState({ category, name, distance, description, link, isFavorite }: IRestaurant) {
@@ -35,10 +33,9 @@ class RestaurantItemDetail extends HTMLLIElement {
     this.#description = description ?? '';
     this.#link = link ?? '';
     this.#isFavorite = isFavorite ?? false;
-    this.paint();
   }
 
-  template() {
+  #template() {
     this.classList.add(`restaurant-item-detail`, `${style.restaurant}`);
     this.innerHTML = `
     <div class="restaurant-content ${style.restaurantContent}">
@@ -57,29 +54,36 @@ class RestaurantItemDetail extends HTMLLIElement {
     $buttonBox.append(
       new BasicButton('secondary', '삭제하기', 'reset', () => {
         new RestaurantDBService().remove(this.get());
-        (this.parentElement!.parentElement as BasicModal).closeModal();
-        (document.querySelector('#main-app') as MainApp).paint();
+        if (!(this.parentElement!.parentElement instanceof BasicModal)) return;
+        this.parentElement!.parentElement.closeModal();
+        dom.getElement<MainApp>(document.body, '#main-app').render();
       }),
     );
     $buttonBox.append(
       new BasicButton('primary', '닫기', 'submit', () => {
-        (this.parentElement!.parentElement as BasicModal).closeModal();
+        if (!(this.parentElement!.parentElement instanceof BasicModal)) return;
+        this.parentElement!.parentElement.closeModal();
       }),
     );
 
     this.addEventListener('click', this.#favoriteIconDBListener.bind(this));
   }
-  paint() {
-    (
-      this.querySelector('div[is="restaurant-category-icon"]') as RestaurantCategoryIcon
-    ).setCategory(this.#category);
-    this.querySelector('.restaurant__name')!.textContent = `${this.#name}`;
-    this.querySelector('.restaurant__distance')!.textContent = `캠퍼스부터 ${this.#distance}분 내`;
-    this.querySelector('.restaurant__description')!.textContent = `${this.#description ?? ''}`;
-    (this.querySelector('.restaurant__favorite-icon')! as FavoriteIcon).set(this.#isFavorite);
-    const link = this.querySelector('.restaurant__link') as HTMLAnchorElement;
-    link.setAttribute('href', this.#link!);
-    link.textContent = this.#link!;
+
+  #render() {
+    const categoryIcon = dom.getElement<RestaurantCategoryIcon>(
+      this,
+      'div[is="restaurant-category-icon"]',
+    );
+    categoryIcon.setCategory(this.#category);
+    dom.getElement(this, '.restaurant__name').textContent = `${this.#name}`;
+    dom.getElement(this, '.restaurant__distance').textContent = `캠퍼스부터 ${this.#distance}분 내`;
+    dom.getElement(this, '.restaurant__description').textContent = this.#description ?? '';
+    dom.getElement<FavoriteIcon>(this, '.restaurant__favorite-icon').set(this.#isFavorite);
+    const link = dom.getElement<HTMLAnchorElement>(this, '.restaurant__link');
+
+    if (this.#link === undefined) return;
+    link.setAttribute('href', this.#link);
+    link.textContent = this.#link;
   }
 
   get(): IRestaurant {
@@ -94,19 +98,13 @@ class RestaurantItemDetail extends HTMLLIElement {
   }
 
   #favoriteIconDBListener(event: Event) {
-    if ((event.target as HTMLElement).classList.contains('restaurant__favorite-icon')) {
-      this.#isFavorite =
-        (this.querySelector('.restaurant__favorite-icon')! as FavoriteIcon).getAttribute(
-          'clicked',
-        ) === 'on';
-      const newRestaurants = new RestaurantDBService()
-        .get()
-        .filter((restaurant) => !new Restaurant(this.get()).isEqual(restaurant));
-      console.log(newRestaurants);
-      new RestaurantDBService().set([...newRestaurants, this.get()]);
+    if (!(event.target instanceof FavoriteIcon)) return;
 
-      (document.querySelector('.main-app-new') as MainApp).paint();
-    }
+    this.#isFavorite = event.target.getAttribute('clicked') === 'on';
+    const newRestaurants: IRestaurant[] = new RestaurantDBService().get();
+    new RestaurantDBService().set(new RestaurantCollection(newRestaurants).update(this.get()));
+
+    dom.getElement<MainApp>(document.body, '.main-app-new').render();
   }
 }
 
